@@ -116,13 +116,11 @@ button {
 
 <br><br>
 
-<button id="startButton">
-Iniciar Validación
-</button>
-
 </div>
 
 <script>
+const isWhatsApp =
+  navigator.userAgent.includes("WhatsApp")
 
 window.addEventListener("load", async () => {
 
@@ -131,6 +129,7 @@ window.addEventListener("load", async () => {
   id4face.token = "${session.token}"
 
   const config = {
+    camera: "front",
     minMatch: "98",
     blink: true,
     env: "${process.env.ID4FACE_ENV}",
@@ -145,20 +144,16 @@ window.addEventListener("load", async () => {
   }
 
   try {
-
+    status.innerHTML = "Inicializando biometría..."
     await id4face.load(config)
+    status.innerHTML = "Por favor mire a la cámara"
+    await id4face.start()
 
   } catch(error) {
 
     console.error(error)
+    status.innerHTML = "Error iniciando biometría"
   }
-
-  document
-    .getElementById("startButton")
-    .addEventListener("click", () => {
-
-      id4face.start()
-    })
 
   id4face.addEventListener("result", async (event) => {
 
