@@ -2,6 +2,10 @@ const express = require("express")
 const router = express.Router()
 
 const sessions = require("../utils/sessions")
+const { evaluateBiometric } = require(
+  "../biometricDecision.service"
+)
+
 const CALLBACK_TOKEN = process.env.CALLBACK_TOKEN
 
 router.post("/callback", async (req, res) => {
@@ -28,7 +32,11 @@ router.post("/callback", async (req, res) => {
       })
     }
 
+    const evaluation =
+      evaluateBiometric(result)
     session.result = result
+    session.evaluation = evaluation
+
     session.finishedAt = new Date()
 
     return res.json({
@@ -55,10 +63,28 @@ router.get("/result/:sessionId", async (req, res) => {
     })
   }
 
+
+
+
   return res.json({
-    success: true,
-    data: session
+
+  success: true,
+
+  sessionId: req.params.sessionId,
+
+  similarity:
+    session.evaluation?.similarity,
+
+  decision:
+    session.evaluation?.decision,
+
+  message:
+    session.evaluation?.message,
+
+  biometrics:
+    session.result
   })
+
 })
 
 module.exports = router
