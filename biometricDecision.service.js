@@ -1,9 +1,11 @@
 function evaluateBiometric(result) {
 
   const similarity =
-    result?.match ||
-    result?.similarity ||
-    0
+    typeof result?.similarity === "number"
+      ? result.similarity
+      : typeof result?.match === "number"
+      ? result.match
+      : 0
 
   let decision = "REJECTED"
 
