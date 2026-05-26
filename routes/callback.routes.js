@@ -7,7 +7,7 @@ const { evaluateBiometric } = require(
 )
 const { fetchExtraDocumentByCedula } = require("../services/extraDocument.service")
 
-const CALLBACK_TOKEN = process.env.CALLBACK_TOKEN
+const   CALLBACK_TOKEN = process.env.CALLBACK_TOKEN
 
 router.post("/callback", async (req, res) => {
 

@@ -1,15 +1,22 @@
-const axios = require("axios")
+﻿const axios = require("axios")
 const FormData = require("form-data")
 
 const REQUEST_INFORMATION_BASE_URL = process.env.REQUEST_INFORMATION_BASE_URL
 const REQUEST_INFORMATION_PATH = "/api/request-information"
 
 async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}) {
-  const requestBaseUrl = options.baseUrl || REQUEST_INFORMATION_BASE_URL
-  const requestPath = options.requestPath || REQUEST_INFORMATION_PATH
+  const requestBaseUrl = (options.baseUrl || REQUEST_INFORMATION_BASE_URL || "").trim()
+  const requestPath = (options.requestPath || REQUEST_INFORMATION_PATH || "").trim()
 
   if (!requestBaseUrl) {
     throw new Error("REQUEST_INFORMATION_BASE_URL no está configurada y no se recibió baseUrl en options.")
+  }
+
+  let requestUrl
+  try {
+    requestUrl = new URL(requestPath, requestBaseUrl).toString()
+  } catch (error) {
+    throw new Error(`URL inválida para request-information: ${error.message}`)
   }
 
   if (!pdfBuffer) {
@@ -26,7 +33,7 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   form.append("nui", options.nui)
   form.append("givenName", options.givenName)
   form.append("secondName", options.secondName)
-  form.append("surname1", options.surname1 )
+  form.append("surname1", options.surname1)
   form.append("surname2", options.surname2)
   form.append("province", options.province)
   form.append("city", options.city)
@@ -76,7 +83,7 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   }
 
   const response = await axios.post(
-    `${requestBaseUrl}${requestPath}`,
+    requestUrl,
     form,
     axiosConfig
   )
