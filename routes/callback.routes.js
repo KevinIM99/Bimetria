@@ -105,4 +105,33 @@ router.get("/result/:sessionId", async (req, res) => {
 
 })
 
+router.get("/result", async (req, res) => {
+  const sessionId = req.query.sessionId || req.body?.sessionId
+
+  if (!sessionId) {
+    return res.status(400).json({
+      success: false,
+      message: "sessionId es requerido como query param"
+    })
+  }
+
+  const session = sessions[sessionId]
+
+  if (!session) {
+    return res.status(404).json({
+      success: false,
+      message: "Sesión no encontrada"
+    })
+  }
+
+  return res.json({
+    success: true,
+    sessionId,
+    similarity: session.evaluation?.similarity,
+    decision: session.evaluation?.decision,
+    message: session.evaluation?.message,
+    biometrics: session.result
+  })
+})
+
 module.exports = router
