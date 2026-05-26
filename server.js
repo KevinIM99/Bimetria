@@ -5,6 +5,7 @@ const cors = require("cors")
 
 const verificationRoutes = require("./routes/verification.routes")
 const callbackRoutes = require("./routes/callback.routes")
+const requestRoutes = require("./routes/request.routes")
 
 const app = express()
 
@@ -18,6 +19,7 @@ app.get("/", (req, res) => {
 
 app.use(verificationRoutes)
 app.use(callbackRoutes)
+app.use(requestRoutes)
 
 const PORT = process.env.PORT || 3000
 

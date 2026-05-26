@@ -5,6 +5,7 @@ const sessions = require("../utils/sessions")
 const { evaluateBiometric } = require(
   "../biometricDecision.service"
 )
+const { fetchExtraDocumentByCedula } = require("../services/extraDocument.service")
 
 const CALLBACK_TOKEN = process.env.CALLBACK_TOKEN
 
@@ -38,6 +39,23 @@ router.post("/callback", async (req, res) => {
     session.evaluation = evaluation
 
     session.finishedAt = new Date()
+
+    if (evaluation.decision === "APPROVED") {
+      try {
+        const extraDocumentBuffer = await fetchExtraDocumentByCedula(session.cedula)
+        session.extraDocument = {
+          id: session.cedula,
+          buffer: extraDocumentBuffer,
+          fetchedAt: new Date()
+        }
+      } catch (error) {
+        console.error("Error obteniendo extradocument:", error.message)
+        session.extraDocument = {
+          id: session.cedula,
+          error: error.message
+        }
+      }
+    }
 
     return res.json({
       success: true
