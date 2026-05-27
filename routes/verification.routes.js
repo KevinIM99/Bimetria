@@ -30,7 +30,7 @@ router.post("/start-verification", async (req, res) => {
       createdAt: new Date()
     }
 
-    const verificationUrl = `${process.env.SELF_URL}/verify/${sessionId}`
+    const verificationUrl = `${process.env.BASE_URL}/verify/${sessionId}`
 
     return res.json({
       success: true,
@@ -135,7 +135,7 @@ window.addEventListener("load", async () => {
     env: "${process.env.ID4FACE_ENV}",
     faceRecognition: true,
 
-    callbackUrl: "${process.env.SELF_URL}/callback",
+    callbackUrl: "${process.env.BASE_URL}/callback",
 
     checkId: {
       id: "${session.cedula}",
@@ -157,7 +157,7 @@ window.addEventListener("load", async () => {
 
   id4face.addEventListener("result", async (event) => {
 
-    await fetch("${process.env.SELF_URL}/callback", {
+    await fetch("${process.env.BASE_URL}/callback", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
