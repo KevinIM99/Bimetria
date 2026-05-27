@@ -2,28 +2,12 @@
 const FormData = require("form-data")
 
 const REQUEST_INFORMATION_BASE_URL = process.env.REQUEST_INFORMATION_BASE_URL
-const REQUEST_INFORMATION_PATH = "/api/request-information"
 
 async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}) {
   const requestBaseUrl = (options.baseUrl || REQUEST_INFORMATION_BASE_URL || "").trim()
-  const requestPath = (options.requestPath || REQUEST_INFORMATION_PATH || "").trim()
 
   if (!requestBaseUrl) {
-    throw new Error("REQUEST_INFORMATION_BASE_URL no está configurada y no se recibió baseUrl en options.")
-  }
-  console.log({
-    requestBaseUrl: `[${requestBaseUrl}]`,
-    requestPath: `[${requestPath}]`
-  })
-  let requestUrl
-  try {
-    requestUrl = requestBaseUrl.replace(/\/+$/, "") + "/" + requestPath.replace(/^\/+/, "")
-    console.log("URL generada:", requestUrl);
-  } catch (error) {
-    console.error("Error construyendo URL");
-    console.error("requestBaseUrl:", requestBaseUrl);
-    console.error("requestPath:", requestPath);
-    throw new Error(`URL inválida para request-information: ${error.message}`)
+    throw new Error("REQUEST_INFORMATION_BASE_URL no está configurada.")
   }
 
   if (!pdfBuffer) {
@@ -31,73 +15,73 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   }
 
   if (!bearerToken) {
-    throw new Error("Bearer token es requerido para enviar request-information.")
+    throw new Error("Bearer token es requerido.")
   }
+
+  const requestUrl = requestBaseUrl.replace(/\/+$/, "") + "/api/request-information"
+  console.log("REQUEST URL:", requestUrl)
 
   const form = new FormData()
 
-  // Campos de metadata requeridos por el API
-  form.append("nui", options.nui)
-  form.append("givenName", options.givenName)
-  form.append("secondName", options.secondName)
-  form.append("surname1", options.surname1)
-  form.append("surname2", options.surname2)
-  form.append("province", options.province)
-  form.append("city", options.city)
-  form.append("country", options.country || "EC")
-  form.append("address", options.address || "")
-  form.append("email", options.email || "")
+  form.append("nui",         options.nui)
+  form.append("givenName",   options.givenName)
+  form.append("secondName",  options.secondName)
+  form.append("surname1",    options.surname1)
+  form.append("surname2",    options.surname2)
+  form.append("province",    options.province)
+  form.append("city",        options.city)
+  form.append("country",     options.country || "EC")
+  form.append("address",     options.address || "")
+  form.append("email",       options.email || "")
   form.append("phoneNumber", options.phoneNumber || "")
+  form.append("reason",      options.reason || "Firma de contrato") // ← faltaba
 
-  // Enviar el mismo PDF en ambos campos: "file" (archivo) y "evidenceFile"
+  if (options.typeSign)   form.append("typeSign",   options.typeSign)
+  if (options.nuiManager) form.append("nuiManager", options.nuiManager)
+  if (options.clientCode) form.append("clientCode", options.clientCode)
+
+  // ✅ nombre con "_doc" para que Signbox lo procese
   form.append("file", pdfBuffer, {
-    filename: options.filename || "evidence.pdf",
+    filename: options.filename || "contrato_doc.pdf",
     contentType: "application/pdf"
   })
 
-  form.append("evidenceFile", pdfBuffer, {
-    filename: options.evidenceFilename || (options.filename || "evidence.pdf"),
+  // ✅ campo correcto según documentación: "evidence-biometric" (mismo PDF por ahora)
+  form.append("evidence-biometric", pdfBuffer, {
+    filename: options.evidenceFilename || "evidencia_biometrica.pdf",
     contentType: "application/pdf"
   })
 
-  const headers = {
-    ...form.getHeaders(),
-    ...(options.headers || {})
-  }
-
-  const effectiveBearerToken = options.bearerToken || bearerToken
-  if (effectiveBearerToken && !options.disableBearer) {
-    headers.Authorization = `Bearer ${effectiveBearerToken}`
-  }
-
-  if (options.apiKey && options.apiKeyHeader) {
-    headers[options.apiKeyHeader] = options.apiKey
-  }
-
-  if (options.authHeaders) {
-    Object.assign(headers, options.authHeaders)
-  }
-
-  const axiosConfig = {
-    headers
-  }
-
-  if (options.basicAuth || (options.username && options.password)) {
-    axiosConfig.auth = {
-      username: (options.basicAuth?.username || options.username),
-      password: (options.basicAuth?.password || options.password)
+  const response = await axios.post(requestUrl, form, {
+    headers: {
+      ...form.getHeaders(),
+      Authorization: `Bearer ${bearerToken}`
     }
-  }
-
-  const response = await axios.post(
-    requestUrl,
-    form,
-    axiosConfig
-  )
+  })
 
   return response.data
+  // { status, requestId, url, detail }
+}
+
+async function completeSign(requestId, bearerToken, options = {}) {
+  const requestBaseUrl = (options.baseUrl || REQUEST_INFORMATION_BASE_URL || "").trim()
+  const completeSignUrl = requestBaseUrl.replace(/\/+$/, "") + "/api/complete-sign"
+  console.log("COMPLETE SIGN URL:", completeSignUrl)
+
+  const response = await axios.post(completeSignUrl, null, {
+    headers: {
+      Authorization: `Bearer ${bearerToken}`,
+      Cookie: `onb_request=${requestId}`,
+      "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+      "X-Forwarded-For": options.clientIp || "127.0.0.1"
+    }
+  })
+
+  return response.data
+  // { result: true, detail: "Firma en proceso" }
 }
 
 module.exports = {
-  submitRequestInformationFile
+  submitRequestInformationFile,
+  completeSign
 }

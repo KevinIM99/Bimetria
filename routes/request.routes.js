@@ -3,7 +3,8 @@ const router = express.Router()
 
 const sessions = require("../utils/sessions")
 const { fetchExtraDocumentByCedula } = require("../services/extraDocument.service")
-const { submitRequestInformationFile } = require("../services/requestInformation.service")
+const { submitRequestInformationFile, completeSign } = require("../services/requestInformation.service")
+
 
 router.post("/onboarding-request/:sessionId", async (req, res) => {
   try {
@@ -47,6 +48,10 @@ router.post("/onboarding-request/:sessionId", async (req, res) => {
     }
 
     const response = await submitRequestInformationFile(pdfBuffer, bearerToken, req.body)
+
+    if (response?.requestId) {
+      session.requestId = response.requestId
+    }
 
     return res.json({
       success: true,
@@ -111,6 +116,10 @@ router.post("/onboarding-request", async (req, res) => {
 
     const response = await submitRequestInformationFile(pdfBuffer, bearerToken, req.body)
 
+    if (response?.requestId) {
+      session.requestId = response.requestId
+    }
+
     return res.json({
       success: true,
       sessionId,
@@ -121,6 +130,40 @@ router.post("/onboarding-request", async (req, res) => {
       success: false,
       message: error.message
     })
+  }
+})
+
+router.post("/complete-sign/:sessionId", async (req, res) => {
+  try {
+    const { sessionId } = req.params
+    const bearerToken =
+      req.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+      req.body?.bearerToken
+
+    if (!bearerToken) {
+      return res.status(400).json({ success: false, message: "Bearer token requerido" })
+    }
+
+    const session = sessions[sessionId]
+    if (!session) {
+      return res.status(404).json({ success: false, message: "Sesión no encontrada" })
+    }
+
+    if (!session.requestId) {
+      return res.status(400).json({
+        success: false,
+        message: "Primero debes llamar a /onboarding-request para obtener el requestId"
+      })
+    }
+
+    const result = await completeSign(session.requestId, bearerToken, {
+      baseUrl: req.body?.baseUrl,
+      clientIp: req.ip
+    })
+
+    return res.json({ success: true, sessionId, result })
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message })
   }
 })
 
