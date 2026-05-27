@@ -40,14 +40,14 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   if (options.nuiManager) form.append("nuiManager", options.nuiManager)
   if (options.clientCode) form.append("clientCode", options.clientCode)
 
-  // ✅ nombre con "_doc" para que Signbox lo procese
+
   form.append("file", pdfBuffer, {
     filename: options.filename || "contrato_doc.pdf",
     contentType: "application/pdf"
   })
 
-  // ✅ campo correcto según documentación: "evidence-biometric" (mismo PDF por ahora)
-  form.append("evidence-biometric", pdfBuffer, {
+ 
+  form.append("evidenceFile", pdfBuffer, {
     filename: options.evidenceFilename || "evidencia_biometrica.pdf",
     contentType: "application/pdf"
   })
@@ -60,7 +60,7 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   })
 
   return response.data
-  // { status, requestId, url, detail }
+ 
 }
 
 async function completeSign(requestId, bearerToken, options = {}) {
@@ -78,7 +78,7 @@ async function completeSign(requestId, bearerToken, options = {}) {
   })
 
   return response.data
-  // { result: true, detail: "Firma en proceso" }
+
 }
 
 module.exports = {
