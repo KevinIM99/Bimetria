@@ -8,6 +8,12 @@ const BASE_URL =
 
 const EXTRA_DOCUMENT_PATH = "/api/extra-document"
 
+console.log("===== EXTRA DOCUMENT SERVICE INIT =====")
+console.log("EXTRA_DOCUMENT_BASE_URL:", process.env.EXTRA_DOCUMENT_BASE_URL)
+console.log("BASE_URL:", process.env.BASE_URL)
+console.log("BASE_URL efectiva:", BASE_URL)
+
+
 async function fetchExtraDocumentByCedula(
   cedula,
   options = {}
