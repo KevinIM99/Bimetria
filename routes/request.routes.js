@@ -167,4 +167,49 @@ router.post("/complete-sign/:sessionId", async (req, res) => {
   }
 })
 
+router.get("/debug-session/:sessionId", (req, res) => {
+  const { sessionId } = req.params
+  const session = sessions[sessionId]
+
+  if (!session) {
+    return res.status(404).json({ success: false, message: "Sesión no encontrada" })
+  }
+
+  const buffer = session.extraDocument?.buffer
+
+  if (!buffer) {
+    return res.json({
+      success: false,
+      message: "No hay extraDocument en la sesión",
+      session: {
+        cedula: session.cedula,
+        decision: session.evaluation?.decision,
+        fetchedAt: session.extraDocument?.fetchedAt
+      }
+    })
+  }
+
+  // Opción 1: devolver info del buffer
+  return res.json({
+    success: true,
+    bufferSize: buffer.length,
+    isPDF: buffer.slice(0, 4).toString() === "%PDF",
+    fetchedAt: session.extraDocument?.fetchedAt
+  })
+})
+
+// Opción 2: descargar el PDF directamente para abrirlo
+router.get("/debug-pdf/:sessionId", (req, res) => {
+  const { sessionId } = req.params
+  const session = sessions[sessionId]
+  const buffer = session?.extraDocument?.buffer
+
+  if (!buffer) {
+    return res.status(404).json({ success: false, message: "No hay PDF en sesión" })
+  }
+
+  res.setHeader("Content-Type", "application/pdf")
+  res.setHeader("Content-Disposition", "inline; filename=extradocument.pdf")
+  res.send(buffer)
+})
 module.exports = router
