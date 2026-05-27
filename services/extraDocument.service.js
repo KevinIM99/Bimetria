@@ -9,6 +9,10 @@ async function fetchExtraDocumentByCedula(cedula, options = {}) {
     throw new Error("La cédula es requerida para obtener el extradocumento.")
   }
 
+  console.log("EXTRA_DOCUMENT_BASE_URL:", process.env.EXTRA_DOCUMENT_BASE_URL)
+  console.log("BASE_URL:", process.env.BASE_URL)
+  console.log("Fetching extradocument para cédula:", cedula)
+  
   const form = new FormData()
   form.append("id", cedula)
 
@@ -22,7 +26,8 @@ async function fetchExtraDocumentByCedula(cedula, options = {}) {
     data: form,
     responseType: "arraybuffer"
   })
-
+  console.log("extradocument status:", response.status)
+  console.log("extradocument size (bytes):", response.data?.length)
   return Buffer.from(response.data)
 }
 
