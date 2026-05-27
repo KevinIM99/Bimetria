@@ -36,7 +36,6 @@ async function fetchExtraDocumentByCedula(cedula, options = {}) {
   return Buffer.from(response.data)
 }
 
-
 module.exports = {
   fetchExtraDocumentByCedula
 }
