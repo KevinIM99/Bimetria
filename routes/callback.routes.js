@@ -134,4 +134,17 @@ router.get("/result", async (req, res) => {
   })
 })
 
+router.get("/debug-session/:sessionId", (req, res) => {
+  const session = sessions[req.params.sessionId]
+  if (!session) return res.status(404).json({ message: "Sesión no encontrada" })
+  return res.json({
+    cedula: session.cedula,
+    decision: session.evaluation?.decision,
+    tieneBuffer: !!session.extraDocument?.buffer,
+    bufferSize: session.extraDocument?.buffer?.length,
+    isPDF: session.extraDocument?.buffer?.slice(0, 4).toString() === "%PDF",
+    extraDocumentError: session.extraDocument?.error  // ← agrega esto
+  })
+})
+
 module.exports = router
