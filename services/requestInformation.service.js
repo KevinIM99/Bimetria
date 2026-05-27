@@ -17,7 +17,7 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   })
   let requestUrl
   try {
-    requestUrl = new URL(requestPath, requestBaseUrl).toString()
+    requestUrl = requestBaseUrl.replace(/\/+$/, "") + "/" + requestPath.replace(/^\/+/, "")
     console.log("URL generada:", requestUrl);
   } catch (error) {
     console.error("Error construyendo URL");
