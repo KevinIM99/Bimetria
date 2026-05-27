@@ -12,13 +12,16 @@ async function fetchExtraDocumentByCedula(cedula, options = {}) {
   console.log("EXTRA_DOCUMENT_BASE_URL:", process.env.EXTRA_DOCUMENT_BASE_URL)
   console.log("BASE_URL:", process.env.BASE_URL)
   console.log("Fetching extradocument para cédula:", cedula)
-  
+
   const form = new FormData()
   form.append("id", cedula)
 
+  const url = `${BASE_URL}${EXTRA_DOCUMENT_PATH}`
+  console.log("URL extradocument:", url)
+
   const response = await axios({
-    method: options.method || "post",
-    url: `${BASE_URL}${EXTRA_DOCUMENT_PATH}`,
+    method: "get",
+    url,
     headers: {
       ...form.getHeaders(),
       ...(options.headers || {})
@@ -26,10 +29,13 @@ async function fetchExtraDocumentByCedula(cedula, options = {}) {
     data: form,
     responseType: "arraybuffer"
   })
+
   console.log("extradocument status:", response.status)
   console.log("extradocument size (bytes):", response.data?.length)
+
   return Buffer.from(response.data)
 }
+
 
 module.exports = {
   fetchExtraDocumentByCedula
