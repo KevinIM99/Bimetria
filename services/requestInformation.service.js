@@ -11,7 +11,10 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   if (!requestBaseUrl) {
     throw new Error("REQUEST_INFORMATION_BASE_URL no está configurada y no se recibió baseUrl en options.")
   }
-
+  console.log({
+    requestBaseUrl: `[${requestBaseUrl}]`,
+    requestPath: `[${requestPath}]`
+  })
   let requestUrl
   try {
     requestUrl = new URL(requestPath, requestBaseUrl).toString()
