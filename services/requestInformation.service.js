@@ -4,6 +4,10 @@ const FormData = require("form-data")
 const REQUEST_INFORMATION_BASE_URL = process.env.REQUEST_INFORMATION_BASE_URL
 
 async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}) {
+  console.log("REQUEST_INFORMATION_BASE_URL:", process.env.REQUEST_INFORMATION_BASE_URL)
+  console.log("options.baseUrl:", options.baseUrl)
+
+  
   const requestBaseUrl = (options.baseUrl || REQUEST_INFORMATION_BASE_URL || "").trim()
 
   if (!requestBaseUrl) {
