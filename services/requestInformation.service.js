@@ -15,7 +15,11 @@ async function submitRequestInformationFile(pdfBuffer, bearerToken, options = {}
   let requestUrl
   try {
     requestUrl = new URL(requestPath, requestBaseUrl).toString()
+    console.log("URL generada:", requestUrl);
   } catch (error) {
+    console.error("Error construyendo URL");
+    console.error("requestBaseUrl:", requestBaseUrl);
+    console.error("requestPath:", requestPath);
     throw new Error(`URL inválida para request-information: ${error.message}`)
   }
 
